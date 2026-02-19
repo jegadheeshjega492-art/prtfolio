@@ -1,28 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jegadheesh M | AI Development Portfolio</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jegadheesh M | AI Portfolio</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <div class="scroll-container">
-        <canvas id="hero-lightpass"></canvas>
-        <div class="resume-overlay">
-            <section class="content-block">
-                <h1>Jegadheesh.M</h1>
-                <p>AI Development | BE-ECE</p>
-            </section>
-        </div>
-    </div>
+    <!-- Scroll Animation Canvas -->
+    <section class="scroll-section">
+        <canvas id="frameCanvas"></canvas>
+    </section>
 
-    <div id="chat-widget">
-        <div id="chat-header">Ask about Jegadheesh</div>
-        <div id="chat-body"></div>
-        <div id="chat-input-area">
-            <input type="text" id="user-input" placeholder="Ask a question...">
+    <!-- Resume Content Section -->
+    <section class="content-section">
+        <div class="content">
+            <h1>Jegadheesh M</h1>
+            <h2>AI Development</h2>
+
+            <h3>Contact</h3>
+            <p><strong>Phone:</strong> 9360185287</p>
+            <p><strong>Email:</strong> jegadheeshjega492@gmail.com</p>
+            <p><strong>Address:</strong> 8/6 New Colony, Vasudevanallur, Tenkasi District</p>
+
+            <h3>Profile</h3>
+            <p>AI systems trained using machine learning and deep learning techniques...</p>
+
+            <h3>Education</h3>
+            <p>BE-ECE, Government College of Engineering, Tirunelveli (2024 - Pursuing)</p>
+
+            <h3>Skills</h3>
+            <ul>
+                <li>Supervision</li>
+                <li>Team Management</li>
+                <li>Training</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-container">
+        <div class="chat-header">Resume Assistant</div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Ask about the resume..." />
             <button onclick="sendMessage()">Send</button>
         </div>
     </div>
