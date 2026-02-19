@@ -1,80 +1,108 @@
-const html = document.documentElement;
-const canvas = document.getElementById("hero-lightpass");
+// ===============================
+// SCROLL FRAME ANIMATION
+// ===============================
+
+const canvas = document.getElementById("frameCanvas");
 const context = canvas.getContext("2d");
 
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
 const frameCount = 240;
-const currentFrame = index => (
-  `./frames/ezgif-frame-${index.toString().padStart(3, '0')}.jpg`
-);
+const currentFrame = index =>
+    `frames/ezgif-frame-${String(index).padStart(3, '0')}.jpg`;
 
-// Preload images
 const images = [];
-for (let i = 1; i <= frameCount; i++) {
-  const img = new Image();
-  img.src = currentFrame(i);
-  images.push(img);
-}
-
-// Draw first frame
 const img = new Image();
-img.src = currentFrame(1);
-canvas.width = 1920;
-canvas.height = 1080;
-img.onload = function() {
-  context.drawImage(img, 0, 0);
+
+for (let i = 1; i <= frameCount; i++) {
+    const image = new Image();
+    image.src = currentFrame(i);
+    images.push(image);
 }
 
-// Update image on scroll
-window.addEventListener('scroll', () => {  
-  const scrollTop = html.scrollTop;
-  const maxScrollTop = html.scrollHeight - window.innerHeight;
-  const scrollFraction = scrollTop / maxScrollTop;
-  const frameIndex = Math.min(
-    frameCount - 1,
-    Math.ceil(scrollFraction * frameCount)
-  );
-  
-  requestAnimationFrame(() => updateImage(frameIndex + 1));
+function render() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+}
+
+window.addEventListener("scroll", () => {
+    const scrollTop = window.scrollY;
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
+    const frameIndex = Math.min(
+        frameCount - 1,
+        Math.floor((scrollTop / maxScroll) * frameCount)
+    );
+
+    img.src = images[frameIndex].src;
+    render();
 });
 
-const updateImage = index => {
-  context.drawImage(images[index - 1], 0, 0);
-}
+// ===============================
+// CHATBOT USING GEMINI 2.5 FLASH
+// ===============================
 
-// --- Chatbot Logic ---
-const API_KEY = "YOUR_GEMINI_API_KEY"; // Replace with your key
-const RESUME_DATA = `
-Jegadheesh.M - AI Development
-Contact: 9360185287, jegadheeshjega492@gmail.com
-Address: 8/6 new colony, vasudevanallur, tenkasi district
+const API_KEY = "YOUR_GEMINI_API_KEY";
+
+const RESUME_CONTENT = `
+Name: Jegadheesh M
+Role: AI Development
+Phone: 9360185287
+Email: jegadheeshjega492@gmail.com
+Address: 8/6 New Colony, Vasudevanallur, Tenkasi District
 Education: BE-ECE, Government College of Engineering, Tirunelveli (2024 - Pursuing)
-Skills: Supervision, Training, Team Management.
+Skills: Supervision, Team Management, Training
+Profile: AI systems trained using ML and DL, applications in healthcare, finance, etc.
 `;
 
-const SYSTEM_PROMPT = `You are a professional assistant for Jegadheesh.M. 
-Answer questions ONLY using the following resume data: ${RESUME_DATA}. 
-If a user asks something not in this data, politely say you only have information regarding his professional resume.`;
-
 async function sendMessage() {
-    const input = document.getElementById('user-input');
-    const body = document.getElementById('chat-body');
-    if (!input.value) return;
+    const input = document.getElementById("userInput");
+    const message = input.value.trim();
+    if (!message) return;
 
-    body.innerHTML += `<div><b>You:</b> ${input.value}</div>`;
-    
-    // Call Gemini API
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: `${SYSTEM_PROMPT} \n\n User Question: ${input.value}` }] }]
-        })
-    });
+    addMessage("You", message);
+    input.value = "";
+
+    const systemPrompt = `
+You are a strict resume assistant.
+
+You MUST answer only using the information provided below.
+If the question is not related to this resume or information is missing,
+respond exactly with:
+"I can only answer questions related to the uploaded resume."
+
+Resume Content:
+${RESUME_CONTENT}
+`;
+
+    const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: systemPrompt + "\nUser Question: " + message }]
+                    }
+                ]
+            })
+        }
+    );
 
     const data = await response.json();
-    const botText = data.candidates[0].content.parts[0].text;
-    
-    body.innerHTML += `<div><b>Bot:</b> ${botText}</div>`;
-    input.value = '';
-    body.scrollTop = body.scrollHeight;
+    const botReply =
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Error retrieving response.";
+
+    addMessage("Bot", botReply);
+}
+
+function addMessage(sender, text) {
+    const chat = document.getElementById("chatMessages");
+    const msg = document.createElement("div");
+    msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
 }
